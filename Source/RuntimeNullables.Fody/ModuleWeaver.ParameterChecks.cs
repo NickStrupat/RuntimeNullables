@@ -91,9 +91,15 @@ public partial class ModuleWeaver
         int index = 0;
 
         instructions.Insert(index++, Instruction.Create(OpCodes.Ldarg, parameter));
-        ILHelpers.InsertGetValueRef(ref index, instructions, parameter.ParameterType);
-        ILHelpers.InsertThrowHelperCallIfValueRefIsNull(
-            ref index, instructions, moduleReferences.ThrowArgumentNullMethod, parameter.Name, instruction0);
+
+        ILHelpers.InsertGetValueRefAndThrowHelperCallIfValueRefIsNull(
+            ref index,
+            instructions,
+            parameter.ParameterType,
+            moduleReferences.ThrowArgumentNullMethod,
+            parameter.Name,
+            instruction0
+        );
     }
 
     private static void InjectParameterOutputCheck(ParameterDefinition parameter, MethodDefinition method, ReturnBlockInfo returnBlockInfo, ModuleReferences moduleReferences)
@@ -107,11 +113,16 @@ public partial class ModuleWeaver
 
             var firstInstruction = Instruction.Create(OpCodes.Ldarg, parameter);
             instructions.Insert(index++, firstInstruction);
-            ILHelpers.InsertGetValueRef(ref index, instructions, parameter.ParameterType);
 
             string message = $"Output parameter '{parameter.Name}' nullability contract was broken.";
-            ILHelpers.InsertThrowHelperCallIfValueRefIsNull(
-                ref index, instructions, moduleReferences.ThrowOutputNullMethod, message, injectionPoint, returnBlockInfo);
+            ILHelpers.InsertGetValueRefAndThrowHelperCallIfValueRefIsNull(
+                ref index,
+                instructions,
+                parameter.ParameterType,
+                moduleReferences.ThrowOutputNullMethod,
+                message,
+                injectionPoint,
+                returnBlockInfo);
 
             returnBlockStartPoints[i] = firstInstruction;
         }

@@ -126,11 +126,15 @@ public partial class ModuleWeaver
                 index--;
                 instructions.Insert(index++, Instruction.Create(OpCodes.Ldarg_0));
                 instructions.Insert(index++, Instruction.Create(OpCodes.Ldfld, currentField));
-                ILHelpers.InsertGetValueRef(ref index, instructions, currentField.FieldType);
 
                 const string message = "Enumerator result nullability contract was broken.";
-                ILHelpers.InsertThrowHelperCallIfValueRefIsNull(
-                    ref index, instructions, moduleReferences.ThrowOutputNullMethod, message, instructions[index]);
+                ILHelpers.InsertGetValueRefAndThrowHelperCallIfValueRefIsNull(
+                    ref index,
+                    instructions,
+                    currentField.FieldType,
+                    moduleReferences.ThrowOutputNullMethod,
+                    message,
+                    instructions[index]);
                 index += 2;
             }
         }
@@ -174,11 +178,14 @@ public partial class ModuleWeaver
 
         // Value on stack is the result value
 
-        ILHelpers.InsertGetValueRef(ref index, instructions, resultType);
-
         const string message = "Async task result nullability contract was broken.";
-        ILHelpers.InsertThrowHelperCallIfValueRefIsNull(
-            ref index, instructions, moduleReferences.GetAsyncResultNullExceptionMethod, message, newLoadResultInstruction);
+        ILHelpers.InsertGetValueRefAndThrowHelperCallIfValueRefIsNull(
+            ref index,
+            instructions,
+            resultType,
+            moduleReferences.GetAsyncResultNullExceptionMethod,
+            message,
+            newLoadResultInstruction);
 
         instructions.Insert(index++, Instruction.Create(OpCodes.Call, setExceptionMethodRef));
         instructions.Insert(index++, Instruction.Create(OpCodes.Ret));
@@ -231,11 +238,15 @@ public partial class ModuleWeaver
 
         instructions.Insert(index++, Instruction.Create(OpCodes.Ldarg_0));
         instructions.Insert(index++, Instruction.Create(OpCodes.Ldfld, currentField));
-        ILHelpers.InsertGetValueRef(ref index, instructions, currentField.FieldType);
 
         const string message = "Async enumerator result nullability contract was broken.";
-        ILHelpers.InsertThrowHelperCallIfValueRefIsNull(
-            ref index, instructions, moduleReferences.GetAsyncResultNullExceptionMethod, message, oldBlockStart);
+        ILHelpers.InsertGetValueRefAndThrowHelperCallIfValueRefIsNull(
+            ref index,
+            instructions,
+            currentField.FieldType,
+            moduleReferences.GetAsyncResultNullExceptionMethod,
+            message,
+            oldBlockStart);
 
         instructions.Insert(index++, Instruction.Create(OpCodes.Call, setExceptionMethodRef));
         instructions.Insert(index++, Instruction.Create(OpCodes.Ret));
@@ -312,11 +323,16 @@ public partial class ModuleWeaver
 
                 instructions.Insert(index++, Instruction.Create(OpCodes.Ldloca, returnTaskVar));
                 instructions.Insert(index++, Instruction.Create(OpCodes.Call, resultGetter));
-                ILHelpers.InsertGetValueRef(ref index, instructions, resultType);
 
                 const string message = "Task result nullability contract was broken.";
-                ILHelpers.InsertThrowHelperCallIfValueRefIsNull(
-                    ref index, instructions, moduleReferences.ThrowOutputNullMethod, message, returnBlockStartPoint, returnBlockInfo);
+                ILHelpers.InsertGetValueRefAndThrowHelperCallIfValueRefIsNull(
+                    ref index,
+                    instructions,
+                    resultType,
+                    moduleReferences.ThrowOutputNullMethod,
+                    message,
+                    returnBlockStartPoint,
+                    returnBlockInfo);
 
                 returnBlockStartPoints[i] = firstInstruction;
             }
@@ -345,11 +361,15 @@ public partial class ModuleWeaver
 
                 instructions.Insert(index++, Instruction.Create(OpCodes.Dup));
                 instructions.Insert(index++, Instruction.Create(OpCodes.Call, resultGetter));
-                ILHelpers.InsertGetValueRef(ref index, instructions, resultType);
-
                 const string message = "Task result nullability contract was broken.";
-                ILHelpers.InsertThrowHelperCallIfValueRefIsNull(
-                    ref index, instructions, moduleReferences.ThrowOutputNullMethod, message, returnBlockStartPoint, returnBlockInfo);
+                ILHelpers.InsertGetValueRefAndThrowHelperCallIfValueRefIsNull(
+                    ref index,
+                    instructions,
+                    resultType,
+                    moduleReferences.ThrowOutputNullMethod,
+                    message,
+                    returnBlockStartPoint,
+                    returnBlockInfo);
 
                 returnBlockStartPoints[i] = firstInstruction;
             }
@@ -372,11 +392,15 @@ public partial class ModuleWeaver
             // Value on stack is the return value
             var firstInstruction = Instruction.Create(OpCodes.Dup);
             instructions.Insert(index++, firstInstruction);
-            ILHelpers.InsertGetValueRef(ref index, instructions, method.ReturnType);
-
             const string message = "Return value nullability contract was broken.";
-            ILHelpers.InsertThrowHelperCallIfValueRefIsNull(
-                ref index, instructions, moduleReferences.ThrowOutputNullMethod, message, injectionPoint, returnBlockInfo);
+            ILHelpers.InsertGetValueRefAndThrowHelperCallIfValueRefIsNull(
+                ref index,
+                instructions,
+                method.ReturnType,
+                moduleReferences.ThrowOutputNullMethod,
+                message,
+                injectionPoint,
+                returnBlockInfo);
 
             returnBlockStartPoints[i] = firstInstruction;
         }
