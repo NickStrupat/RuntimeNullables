@@ -20,8 +20,8 @@ internal static class ILHelpers
     {
         var elementType = valueType.GetElementType();
 
-        if (valueType.IsByReference) {
-            if (elementType.IsGenericParameter) {
+        if (elementType.IsGenericParameter) {
+            if (valueType.IsByReference) {
                 instructions.Insert(index++, Instruction.Create(OpCodes.Ldobj, elementType));
                 instructions.Insert(index++, Instruction.Create(OpCodes.Box, elementType));
             }
@@ -29,8 +29,8 @@ internal static class ILHelpers
                 instructions.Insert(index++, Instruction.Create(OpCodes.Ldind_Ref));
             }
         }
-        else if (elementType.IsGenericParameter) {
-            instructions.Insert(index++, Instruction.Create(OpCodes.Box, valueType));
+        else if (valueType.IsByReference) {
+            instructions.Insert(index++, Instruction.Create(OpCodes.Ldind_Ref));
         }
 
         var branchIfNotNull = Instruction.Create(OpCodes.Brtrue_S, continuationPoint);
